@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Account } from './accounts/account.entity.js';
 import { AccountsModule } from './accounts/accounts.module.js';
+import { BalanceModule } from './balance/balance.module.js';
 import { Transaction } from './transactions/transaction.entity.js';
 import { TransactionsModule } from './transactions/transactions.module.js';
 
@@ -15,6 +16,7 @@ import { TransactionsModule } from './transactions/transactions.module.js';
       synchronize: true,
     }),
     AccountsModule,
+    BalanceModule,
     TransactionsModule,
   ],
   controllers: [],
