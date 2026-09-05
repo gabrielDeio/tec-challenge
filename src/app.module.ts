@@ -1,7 +1,15 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'better-sqlite3',
+      database: 'db.sqlite',
+      autoLoadEntities: true,
+      synchronize: true,
+    }),
+  ],
   controllers: [],
   providers: [],
 })
