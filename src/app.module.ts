@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Account } from './accounts/account.entity.js';
 import { AccountsModule } from './accounts/accounts.module.js';
 import { Transaction } from './transactions/transaction.entity.js';
+import { TransactionsModule } from './transactions/transactions.module.js';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { Transaction } from './transactions/transaction.entity.js';
       synchronize: true,
     }),
     AccountsModule,
+    TransactionsModule,
   ],
   controllers: [],
   providers: [],
