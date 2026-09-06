@@ -1,13 +1,20 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { CreateEventDto } from './dto/create-event.dto.js';
-import { DepositEventResponse, EventsService } from './events.service.js';
+import {
+  AccountNotFoundError,
+  EventResponse,
+  EventsService,
+} from './events.service.js';
+import type { Response } from 'express';
 
 @ApiTags('events')
 @Controller('event')
@@ -27,23 +34,63 @@ export class EventsController {
           amount: 100,
         },
       },
+      withdraw: {
+        summary: 'Withdraw',
+        value: {
+          type: 'withdraw',
+          origin: '123',
+          amount: 50,
+        },
+      },
     },
   })
   @ApiCreatedResponse({
-    description: 'Deposit applied successfully.',
+    description: 'Event applied successfully.',
     schema: {
-      example: {
-        destination: {
-          id: '123',
-          balance: 100,
+      oneOf: [
+        {
+          example: {
+            destination: {
+              id: '123',
+              balance: 100,
+            },
+          },
         },
-      },
+        {
+          example: {
+            origin: {
+              id: '123',
+              balance: 50,
+            },
+          },
+        },
+      ],
     },
   })
   @ApiBadRequestResponse({
     description: 'Invalid body or unsupported event type.',
   })
-  handleEvent(@Body() dto: CreateEventDto): Promise<DepositEventResponse> {
-    return this.eventsService.handleEvent(dto);
+  @ApiNotFoundResponse({
+    description: 'Origin account does not exist. Response body is 0.',
+    schema: { type: 'integer', example: 0 },
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Insufficient funds.',
+  })
+  async handleEvent(
+    @Body() dto: CreateEventDto,
+    @Res() response: Response,
+  ): Promise<Response<EventResponse | number>> {
+    try {
+      const result = await this.eventsService.handleEvent(dto);
+
+      return response.status(HttpStatus.CREATED).send(result);
+    } catch (error) {
+      if (error instanceof AccountNotFoundError) {
+        return response.status(HttpStatus.NOT_FOUND).send(0);
+      }
+
+      throw error;
+    }
   }
 }
