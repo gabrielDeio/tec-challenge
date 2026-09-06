@@ -42,6 +42,15 @@ export class EventsController {
           amount: 50,
         },
       },
+      transfer: {
+        summary: 'Transfer',
+        value: {
+          type: 'transfer',
+          origin: '123',
+          destination: '456',
+          amount: 25,
+        },
+      },
     },
   })
   @ApiCreatedResponse({
@@ -61,6 +70,18 @@ export class EventsController {
             origin: {
               id: '123',
               balance: 50,
+            },
+          },
+        },
+        {
+          example: {
+            origin: {
+              id: '123',
+              balance: 75,
+            },
+            destination: {
+              id: '456',
+              balance: 25,
             },
           },
         },

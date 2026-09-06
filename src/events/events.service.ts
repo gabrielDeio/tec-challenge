@@ -22,7 +22,13 @@ export type WithdrawEventResponse = {
   origin: AccountResponse;
 };
 
-export type EventResponse = DepositEventResponse | WithdrawEventResponse;
+export type TransferEventResponse = {
+  origin: AccountResponse;
+  destination: AccountResponse;
+};
+
+export type EventResponse =
+  DepositEventResponse | WithdrawEventResponse | TransferEventResponse;
 
 export class AccountNotFoundError extends Error {
   constructor() {
@@ -47,9 +53,11 @@ export class EventsService {
       return this.handleWithdraw(dto);
     }
 
-    throw new BadRequestException(
-      'Only deposit and withdraw events are implemented.',
-    );
+    if (dto.type === TransactionType.Transfer) {
+      return this.handleTransfer(dto);
+    }
+
+    throw new BadRequestException('Unsupported event type.');
   }
 
   private handleDeposit(dto: CreateEventDto): Promise<DepositEventResponse> {
@@ -142,6 +150,108 @@ export class EventsService {
         origin: {
           id: updatedAccount.id,
           balance: updatedAccount.balance,
+        },
+      };
+    });
+  }
+
+  private handleTransfer(dto: CreateEventDto): Promise<TransferEventResponse> {
+    if (!dto.origin) {
+      throw new BadRequestException('origin is required for transfer events.');
+    }
+
+    if (!dto.destination) {
+      throw new BadRequestException(
+        'destination is required for transfer events.',
+      );
+    }
+
+    const origin = dto.origin;
+    const destination = dto.destination;
+
+    return this.dataSource.transaction(async (manager) => {
+      const originAccount = await this.accountsRepository.findById(
+        origin,
+        manager,
+      );
+
+      if (!originAccount) {
+        throw new AccountNotFoundError();
+      }
+
+      if (origin === destination) {
+        if (originAccount.balance < dto.amount) {
+          throw new UnprocessableEntityException('Insufficient funds.');
+        }
+
+        const transaction = this.transactionsRepository.create({
+          type: TransactionType.Transfer,
+          amount: dto.amount,
+          accountIdOrigin: originAccount.id,
+          accountIdDestiny: originAccount.id,
+        });
+
+        await this.transactionsRepository.save(transaction, manager);
+
+        return {
+          origin: {
+            id: originAccount.id,
+            balance: originAccount.balance,
+          },
+          destination: {
+            id: originAccount.id,
+            balance: originAccount.balance,
+          },
+        };
+      }
+
+      const debited = await this.accountsRepository.debitIfEnoughBalance(
+        origin,
+        dto.amount,
+        manager,
+      );
+
+      if (!debited) {
+        throw new UnprocessableEntityException('Insufficient funds.');
+      }
+
+      await this.accountsRepository.createIfNotExists(destination, 0, manager);
+      await this.accountsRepository.incrementBalance(
+        destination,
+        dto.amount,
+        manager,
+      );
+
+      const updatedOrigin = await this.accountsRepository.findById(
+        origin,
+        manager,
+      );
+      const updatedDestination = await this.accountsRepository.findById(
+        destination,
+        manager,
+      );
+
+      if (!updatedOrigin || !updatedDestination) {
+        throw new Error('Transfer accounts could not be found.');
+      }
+
+      const transaction = this.transactionsRepository.create({
+        type: TransactionType.Transfer,
+        amount: dto.amount,
+        accountIdOrigin: updatedOrigin.id,
+        accountIdDestiny: updatedDestination.id,
+      });
+
+      await this.transactionsRepository.save(transaction, manager);
+
+      return {
+        origin: {
+          id: updatedOrigin.id,
+          balance: updatedOrigin.balance,
+        },
+        destination: {
+          id: updatedDestination.id,
+          balance: updatedDestination.balance,
         },
       };
     });
