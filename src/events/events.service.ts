@@ -169,6 +169,12 @@ export class EventsService {
     const origin = dto.origin;
     const destination = dto.destination;
 
+    if (origin === destination) {
+      throw new BadRequestException(
+        'origin and destination must be different for transfer events.',
+      );
+    }
+
     return this.dataSource.transaction(async (manager) => {
       const originAccount = await this.accountsRepository.findById(
         origin,
@@ -177,32 +183,6 @@ export class EventsService {
 
       if (!originAccount) {
         throw new AccountNotFoundError();
-      }
-
-      if (origin === destination) {
-        if (originAccount.balance < dto.amount) {
-          throw new UnprocessableEntityException('Insufficient funds.');
-        }
-
-        const transaction = this.transactionsRepository.create({
-          type: TransactionType.Transfer,
-          amount: dto.amount,
-          accountIdOrigin: originAccount.id,
-          accountIdDestiny: originAccount.id,
-        });
-
-        await this.transactionsRepository.save(transaction, manager);
-
-        return {
-          origin: {
-            id: originAccount.id,
-            balance: originAccount.balance,
-          },
-          destination: {
-            id: originAccount.id,
-            balance: originAccount.balance,
-          },
-        };
       }
 
       const debited = await this.accountsRepository.debitIfEnoughBalance(

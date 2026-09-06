@@ -89,7 +89,8 @@ export class EventsController {
     },
   })
   @ApiBadRequestResponse({
-    description: 'Invalid body or unsupported event type.',
+    description:
+      'Invalid body, unsupported event type, or same origin and destination.',
   })
   @ApiNotFoundResponse({
     description: 'Origin account does not exist. Response body is 0.',
