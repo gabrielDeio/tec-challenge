@@ -9,12 +9,14 @@ import { TransactionsModule } from './transactions/transactions.module.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'better-sqlite3',
-      database: 'db.sqlite',
-      entities: [Account, Transaction],
-      autoLoadEntities: true,
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      useFactory: () => ({
+        type: 'better-sqlite3',
+        database: process.env.DATABASE_PATH ?? 'db.sqlite',
+        entities: [Account, Transaction],
+        autoLoadEntities: true,
+        synchronize: true,
+      }),
     }),
     AccountsModule,
     BalanceModule,
