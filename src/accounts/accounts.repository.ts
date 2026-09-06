@@ -26,6 +26,10 @@ export class AccountsRepository {
     return this.getRepository(manager).findOneBy({ id });
   }
 
+  async clear(manager?: EntityManager): Promise<void> {
+    await this.getRepository(manager).clear();
+  }
+
   async createIfNotExists(
     id: string,
     balance: number,

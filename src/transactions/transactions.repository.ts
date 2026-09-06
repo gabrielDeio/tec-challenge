@@ -48,6 +48,10 @@ export class TransactionsRepository {
     return this.getRepository(manager).findBy({ accountIdDestiny: accountId });
   }
 
+  async clear(manager?: EntityManager): Promise<void> {
+    await this.getRepository(manager).clear();
+  }
+
   private getRepository(manager?: EntityManager): Repository<Transaction> {
     return manager?.getRepository(Transaction) ?? this.repository;
   }

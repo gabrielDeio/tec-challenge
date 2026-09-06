@@ -4,6 +4,7 @@ import { Account } from './accounts/account.entity.js';
 import { AccountsModule } from './accounts/accounts.module.js';
 import { BalanceModule } from './balance/balance.module.js';
 import { EventsModule } from './events/events.module.js';
+import { ResetModule } from './reset/reset.module.js';
 import { Transaction } from './transactions/transaction.entity.js';
 import { TransactionsModule } from './transactions/transactions.module.js';
 
@@ -21,6 +22,7 @@ import { TransactionsModule } from './transactions/transactions.module.js';
     AccountsModule,
     BalanceModule,
     EventsModule,
+    ResetModule,
     TransactionsModule,
   ],
   controllers: [],
