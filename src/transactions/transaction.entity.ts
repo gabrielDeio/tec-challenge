@@ -24,7 +24,7 @@ export class Transaction {
   @Column({ type: 'integer' })
   amount: number;
 
-  @Column({ type: 'uuid', name: 'account_id_origin', nullable: true })
+  @Column({ type: 'text', name: 'account_id_origin', nullable: true })
   accountIdOrigin: string | null;
 
   @ManyToOne(() => Account, (account) => account.originTransactions, {
@@ -33,7 +33,7 @@ export class Transaction {
   @JoinColumn({ name: 'account_id_origin' })
   accountOrigin: Account | null;
 
-  @Column({ type: 'uuid', name: 'account_id_destiny', nullable: true })
+  @Column({ type: 'text', name: 'account_id_destiny', nullable: true })
   accountIdDestiny: string | null;
 
   @ManyToOne(() => Account, (account) => account.destinyTransactions, {

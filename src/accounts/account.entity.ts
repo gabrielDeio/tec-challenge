@@ -1,9 +1,9 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Transaction } from '../transactions/transaction.entity.js';
 
 @Entity('accounts')
 export class Account {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({ type: 'text' })
   id: string;
 
   @Column({ type: 'integer' })
