@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { Transaction } from './transaction.entity.js';
 
 type CreateTransactionData = Pick<
@@ -19,23 +19,36 @@ export class TransactionsRepository {
     return this.repository.create(data);
   }
 
-  save(transaction: Transaction): Promise<Transaction> {
-    return this.repository.save(transaction);
+  save(
+    transaction: Transaction,
+    manager?: EntityManager,
+  ): Promise<Transaction> {
+    return this.getRepository(manager).save(transaction);
   }
 
-  findAll(): Promise<Transaction[]> {
-    return this.repository.find();
+  findAll(manager?: EntityManager): Promise<Transaction[]> {
+    return this.getRepository(manager).find();
   }
 
-  findById(id: string): Promise<Transaction | null> {
-    return this.repository.findOneBy({ id });
+  findById(id: string, manager?: EntityManager): Promise<Transaction | null> {
+    return this.getRepository(manager).findOneBy({ id });
   }
 
-  findByOriginAccountId(accountId: string): Promise<Transaction[]> {
-    return this.repository.findBy({ accountIdOrigin: accountId });
+  findByOriginAccountId(
+    accountId: string,
+    manager?: EntityManager,
+  ): Promise<Transaction[]> {
+    return this.getRepository(manager).findBy({ accountIdOrigin: accountId });
   }
 
-  findByDestinyAccountId(accountId: string): Promise<Transaction[]> {
-    return this.repository.findBy({ accountIdDestiny: accountId });
+  findByDestinyAccountId(
+    accountId: string,
+    manager?: EntityManager,
+  ): Promise<Transaction[]> {
+    return this.getRepository(manager).findBy({ accountIdDestiny: accountId });
+  }
+
+  private getRepository(manager?: EntityManager): Repository<Transaction> {
+    return manager?.getRepository(Transaction) ?? this.repository;
   }
 }
