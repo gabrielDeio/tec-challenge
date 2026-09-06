@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AppModule } from '../app.module.js';
+import { setupApp } from '../app.setup.js';
 import { Account } from '../accounts/account.entity.js';
 
 describe('BalanceController', () => {
@@ -24,6 +25,7 @@ describe('BalanceController', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    setupApp(app);
     await app.init();
 
     accountRepository = moduleRef.get<Repository<Account>>(
